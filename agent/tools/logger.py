@@ -70,12 +70,9 @@ def get_recent_decisions(limit: int = 20) -> list[dict]:
 
 
 if __name__ == "__main__":
-    log_decision(
-        filename="test.mkv",
-        action="subtitle_download",
-        reasoning="No subtitle found, attempted download via subliminal",
-        success=True,
-        details={"source": "opensubtitles", "language": "eng"}
-    )
-    print("Logged successfully")
-    print(get_recent_decisions())
+    print("Recent decisions:")
+    decisions = get_recent_decisions()
+    if not decisions:
+        print("  No decisions logged yet.")
+    for d in decisions:
+        print(d)
