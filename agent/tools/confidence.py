@@ -8,6 +8,8 @@ def score_match(parsed: dict, candidate: dict) -> float:
     score = 0.0
     weights = 0.0
 
+    title_score = 0.0
+
     # Title match — most important factor
     if parsed["cleaned_title"] and candidate["title"]:
         title_score = max(
@@ -23,7 +25,7 @@ def score_match(parsed: dict, candidate: dict) -> float:
         score += title_score * 0.6
         weights += 0.6
 
-    # Year match
+    # Year match — only counted when year is present in filename
     if parsed["year"] and candidate["year"]:
         if str(parsed["year"]) == str(candidate["year"]):
             score += 100 * 0.3
@@ -41,7 +43,14 @@ def score_match(parsed: dict, candidate: dict) -> float:
     if weights == 0:
         return 0.0
 
-    return round(score / weights, 2)
+    raw_score = round(score / weights, 2)
+
+    # Boost: if title is a near-perfect match, don't let missing year drag it
+    # below the threshold. A 95%+ title match with no year is still confident.
+    if title_score >= 95 and not parsed["year"]:
+        raw_score = max(raw_score, 90.0)
+
+    return raw_score
 
 
 def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
@@ -81,9 +90,22 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
     second = scored[1] if len(scored) > 1 else None
 
     # Check for ambiguity — top two results are too close
+    # Only flag as ambiguous if the raw scores are close AND title isn't a near-perfect match
     ambiguous = False
     if second and (best["score"] - second["score"]) < 25:
-        ambiguous = True
+        # If the best title match is near-perfect, don't call it ambiguous
+        best_title_score = max(
+            fuzz.token_sort_ratio(
+                parsed["cleaned_title"].lower(),
+                best["candidate"]["title"].lower()
+            ),
+            fuzz.ratio(
+                parsed["cleaned_title"].lower(),
+                best["candidate"]["title"].lower()
+            )
+        )
+        if best_title_score < 95:
+            ambiguous = True
 
     return {
         "match": best["candidate"],
@@ -93,11 +115,14 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
         "candidates": [s["candidate"] for s in scored[:3]]
     }
 
+
 if __name__ == "__main__":
     test_cases = [
         ("Breaking.Bad.S01E03.720p.BluRay.mkv", "/mnt/media/TV Shows/Breaking.Bad.S01E03.720p.BluRay.mkv", "tv"),
         ("avatar.2009.1080p.mkv", "/mnt/media/Movies/avatar.2009.1080p.mkv", "movie"),
         ("S02E03.mkv", "/mnt/media/TV Shows/The Office/Season 2/S02E03.mkv", "tv"),
+        ("Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4", "/mnt/media/TV Shows/Abbott Elementary/Season 2/Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4", "tv"),
+        ("Steven Universe S03E12 Restaurant Wars.mp4", "/mnt/media/TV Shows/Steven Universe/Season 3/Steven Universe S03E12 Restaurant Wars.mp4", "tv"),
     ]
 
     for name, path, media_type in test_cases:

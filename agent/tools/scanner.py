@@ -39,6 +39,8 @@ def scan_badly_named() -> list[dict]:
     for video_file in media_path.rglob('*'):
         if video_file.suffix.lower() not in VIDEO_EXTENSIONS:
             continue
+        if video_file.name.startswith('._'):
+            continue
 
         if not is_well_named(video_file):
             badly_named.append({
