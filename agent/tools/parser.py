@@ -2,9 +2,9 @@ import re
 from pathlib import Path
 
 
-EPISODE_PATTERN = re.compile(
-    r'[Ss](\d{1,2})[Ee](\d{1,2})'
-)
+# Matches S01E01 or 1x01 style season/episode patterns
+EPISODE_PATTERN_SXE = re.compile(r'[Ss](\d{1,2})[Ee](\d{1,2})')
+EPISODE_PATTERN_XY = re.compile(r'(?<!\d)(\d{1,2})[xX](\d{1,2})(?!\d)')
 
 YEAR_PATTERN = re.compile(
     r'[\.\s\(\[]?((?:19|20)\d{2})[\.\s\)\]]?'
@@ -24,6 +24,23 @@ QUALITY_PATTERNS = {
     "codec": re.compile(r'\b(x264|x265|h264|h265|xvid)\b', re.IGNORECASE),
     "audio": re.compile(r'\b(aac|mp3|dts|ac3|atmos|truehd)\b', re.IGNORECASE),
 }
+
+
+def find_episode(text: str):
+    """
+    Try to find season/episode in text.
+    Returns (match, season, episode) or (None, None, None).
+    Prefers SxE format over NxN format.
+    """
+    m = EPISODE_PATTERN_SXE.search(text)
+    if m:
+        return m, int(m.group(1)), int(m.group(2))
+
+    m = EPISODE_PATTERN_XY.search(text)
+    if m:
+        return m, int(m.group(1)), int(m.group(2))
+
+    return None, None, None
 
 
 def extract_quality_info(filename: str) -> dict:
@@ -72,10 +89,13 @@ def parse_filename(filepath: str) -> dict:
     }
 
     # Try to find season/episode in filename first, then parent folder
-    ep_match = EPISODE_PATTERN.search(filename) or EPISODE_PATTERN.search(parent)
+    ep_match, season, episode = find_episode(filename)
+    if not ep_match:
+        ep_match, season, episode = find_episode(parent)
+
     if ep_match:
-        result["season"] = int(ep_match.group(1))
-        result["episode"] = int(ep_match.group(2))
+        result["season"] = season
+        result["episode"] = episode
 
     # Try to find year
     year_match = YEAR_PATTERN.search(filename) or YEAR_PATTERN.search(parent)
@@ -84,7 +104,7 @@ def parse_filename(filepath: str) -> dict:
 
     # Extract raw title - everything before the season/episode marker
     if ep_match:
-        raw = filename[:ep_match.start()]
+        raw = filename[:ep_match.start()].strip().rstrip('[](). -')
     else:
         raw = filename
 
@@ -101,7 +121,7 @@ def parse_filename(filepath: str) -> dict:
         else:
             cleaned = None
 
-    result["raw_title"] = raw.strip()
+    result["raw_title"] = raw.strip().rstrip('[](). -')
     result["cleaned_title"] = cleaned
     result["quality"] = extract_quality_info(filename)
 
@@ -114,6 +134,8 @@ if __name__ == "__main__":
         "/mnt/media/TV Shows/The Office/Season 2/S02E03.mkv",
         "/mnt/media/Movies/avatar.2009.1080p.mkv",
         "/mnt/media/TV Shows/rarbg_final_v2.mkv",
+        "/mnt/media/TV Shows/The Simpsons/Season 10/The Simpsons [10x12] Sunday Cruddy Sunday.avi",
+        "/mnt/media/TV Shows/The Simpsons/Season 9/Girly Edition.avi",
     ]
 
     for path in test_cases:
