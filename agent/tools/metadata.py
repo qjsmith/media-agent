@@ -53,6 +53,46 @@ def get_episode_details(show_id: int, season: int, episode: int) -> dict:
         return {}
 
 
+def search_episode_by_title(show_id: int, season: int, episode_title: str) -> dict:
+    """Search for an episode by title within a season using fuzzy matching."""
+    url = f"{TMDB_BASE_URL}/tv/{show_id}/season/{season}"
+    params = {"api_key": TMDB_API_KEY}
+    try:
+        response = requests.get(url, params=params, timeout=TMDB_TIMEOUT)
+        if response.status_code != 200:
+            return {}
+        episodes = response.json().get("episodes", [])
+        if not episodes:
+            return {}
+
+        from thefuzz import fuzz
+        best_score = 0
+        best_episode = {}
+        for ep in episodes:
+            ep_name = ep.get("name", "")
+            score = max(
+                fuzz.token_sort_ratio(episode_title.lower(), ep_name.lower()),
+                fuzz.ratio(episode_title.lower(), ep_name.lower())
+            )
+            if score > best_score:
+                best_score = score
+                best_episode = ep
+
+        if best_score >= 80:
+            return {
+                "title": best_episode.get("name"),
+                "episode_number": best_episode.get("episode_number"),
+                "season": season,
+                "overview": best_episode.get("overview"),
+                "air_date": best_episode.get("air_date")
+            }
+        return {}
+
+    except requests.exceptions.RequestException as e:
+        print(f"  [TMDB] search_episode_by_title error: {e}")
+        return {}
+
+
 if __name__ == "__main__":
     results = search_tmdb("Breaking Bad")
     for r in results:

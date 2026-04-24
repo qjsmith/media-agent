@@ -4,7 +4,7 @@ from config import GROQ_API_KEY, MEDIA_PATH
 from agent.tools.scanner import scan_badly_named
 from agent.tools.parser import parse_filename
 from agent.tools.confidence import get_best_match
-from agent.tools.metadata import get_episode_details
+from agent.tools.metadata import get_episode_details, search_episode_by_title
 from agent.tools.renamer import build_tv_path, build_movie_path, rename_file
 from agent.tools.logger import log_decision
 
@@ -86,10 +86,25 @@ def build_new_path(match: dict, parsed: dict, media_type: str) -> str | None:
         season = parsed["season"]
         episode = parsed["episode"]
 
-        if not season or not episode:
+        if not season:
             return None
 
-        episode_details = get_episode_details(match["id"], season, episode)
+        # If we have no episode number but have an episode title, try to look it up
+        if not episode and parsed.get("episode_title"):
+            print(f"  No episode number — searching by title: {parsed['episode_title']}")
+            ep_result = search_episode_by_title(match["id"], season, parsed["episode_title"])
+            if ep_result:
+                episode = ep_result["episode_number"]
+                episode_details = {"title": ep_result["title"]}
+                print(f"  Found episode {episode}: {ep_result['title']}")
+            else:
+                print(f"  Could not match episode title — skipping")
+                return None
+        elif not episode:
+            return None
+        else:
+            episode_details = get_episode_details(match["id"], season, episode)
+
         episode_title = episode_details.get("title", "Unknown Episode")
 
         base = MEDIA_PATH + "/TV Shows"
