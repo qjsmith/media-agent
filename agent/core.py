@@ -138,6 +138,11 @@ def run_agent():
             new_path = build_new_path(result["match"], parsed, media_type)
             if not new_path:
                 print(f"  Could not build path — skipping")
+                log_decision(filename, "skipped", "Could not build path", False, {
+                    "parsed_season": parsed["season"],
+                    "parsed_episode": parsed["episode"],
+                    "cleaned_title": parsed["cleaned_title"]
+                })
                 stats["skipped"] += 1
                 continue
             rename_result = rename_file(path, new_path, dry_run=DRY_RUN)
@@ -169,6 +174,11 @@ def run_agent():
             new_path = build_new_path(match, parsed, media_type)
             if not new_path:
                 print(f"  Could not build path — skipping")
+                log_decision(filename, "skipped", "Could not build path", False, {
+                    "parsed_season": parsed["season"],
+                    "parsed_episode": parsed["episode"],
+                    "cleaned_title": parsed["cleaned_title"]
+                })
                 stats["skipped"] += 1
                 continue
 
