@@ -9,7 +9,8 @@ from agent.tools.renamer import build_tv_path, build_movie_path, rename_file
 from agent.tools.logger import log_decision
 
 CONFIDENCE_THRESHOLD = 90.0
-DRY_RUN = True  # Set to False when you're ready to actually rename files
+DRY_RUN = True        # Set to False when you're ready to actually rename files
+LLM_CALL_LIMIT = 5   # Max LLM calls per run while testing
 
 
 def detect_media_type(parsed: dict) -> str:
@@ -110,6 +111,7 @@ def run_agent():
     print(f"[Agent] Found {len(files)} badly named files\n")
 
     stats = {"auto_renamed": 0, "llm_resolved": 0, "flagged": 0, "skipped": 0}
+    llm_calls = 0
 
     for item in files:
         path = item["path"]
@@ -150,6 +152,12 @@ def run_agent():
         # Low confidence or ambiguous → try LLM
         else:
             print(f"  Low confidence ({result['score']}) or ambiguous — asking LLM")
+            if llm_calls >= LLM_CALL_LIMIT:
+                print(f"  LLM call limit reached — flagging for review")
+                log_decision(filename, "flagged", "LLM call limit reached", False)
+                stats["flagged"] += 1
+                continue
+            llm_calls += 1
             match = llm_resolve(parsed, result["candidates"], llm)
 
             if not match:
@@ -174,10 +182,11 @@ def run_agent():
             stats["llm_resolved"] += 1
 
     print(f"\n[Agent] Done.")
-    print(f"  Auto renamed: {stats['auto_renamed']}")
-    print(f"  LLM resolved: {stats['llm_resolved']}")
+    print(f"  Auto renamed:       {stats['auto_renamed']}")
+    print(f"  LLM resolved:       {stats['llm_resolved']}")
     print(f"  Flagged for review: {stats['flagged']}")
-    print(f"  Skipped: {stats['skipped']}")
+    print(f"  Skipped:            {stats['skipped']}")
+    print(f"  LLM calls made:     {llm_calls} / {LLM_CALL_LIMIT}")
 
 
 if __name__ == "__main__":
