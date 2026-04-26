@@ -88,7 +88,7 @@ def build_new_path(match: dict, parsed: dict, media_type: str) -> str | None:
         season = parsed["season"]
         episode = parsed["episode"]
 
-        if not season:
+        if season is None:
             return None
 
         # If we have no episode number but have an episode title, try to look it up
