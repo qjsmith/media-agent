@@ -206,7 +206,12 @@ def parse_filename(filepath: str) -> dict:
         if show_name:
             cleaned = show_name
             # The filename itself is the episode title in this case
-            result["episode_title"] = clean_episode_title(filename)
+            raw_episode_title = clean_episode_title(filename)
+            # Strip the show name from the front if it's there
+            # e.g. "The Simpsons - Lisa's Sax" → "Lisa's Sax"
+            if raw_episode_title.lower().startswith(show_name.lower()):
+                raw_episode_title = raw_episode_title[len(show_name):].lstrip(' -')
+            result["episode_title"] = raw_episode_title
 
     # Final fallback if still empty
     if not cleaned or len(cleaned) < 2:
