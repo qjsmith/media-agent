@@ -15,6 +15,8 @@ LLM_CALL_LIMIT = 5   # Max LLM calls per run while testing
 
 def detect_media_type(parsed: dict) -> str:
     """Guess if file is tv or movie based on parsed info."""
+    if parsed.get("is_movie_special"):
+        return "movie"
     if parsed["season"] is not None or parsed["episode"] is not None:
         return "tv"
     parent = parsed["context"]["parent_folder"].lower()

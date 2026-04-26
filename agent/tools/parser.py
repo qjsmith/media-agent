@@ -15,6 +15,9 @@ SEASON_PATTERN_S = re.compile(r'[Ss](\d{1,2})')
 SEASON_PATTERN_WORD = re.compile(r'[Ss]eason\s+(\d+)', re.IGNORECASE)
 SEASON_PATTERN_LEADING = re.compile(r'^(\d+)\D')
 
+# Movie Pattern
+MOVIE_SPECIAL_PATTERN = re.compile(r'[Ss](\d{1,2})[Mm](\d{1,2})')
+
 JUNK_WORDS = {
     'bluray', 'blu-ray', 'webrip', 'webdl', 'web-dl', 'hdtv', 'dvdrip',
     'xvid', 'x264', 'x265', 'h264', 'h265', 'aac', 'mp3', 'dts', 'ac3',
@@ -170,6 +173,19 @@ def parse_filename(filepath: str) -> dict:
         result["season"] = season
         result["episode"] = episode
 
+    # Check for movie special format e.g. S05M01
+    movie_special_match = MOVIE_SPECIAL_PATTERN.search(filename)
+    if movie_special_match:
+        result["is_movie_special"] = True
+        before = filename[:movie_special_match.start()].strip().rstrip('-_ ')
+        after = filename[movie_special_match.end():].strip().lstrip('-_ ')
+        # Combine show name + movie title e.g. "Steven Universe The Movie"
+        full_title = f"{before} {after}".strip() if after else before
+        result["cleaned_title"] = clean_title(full_title) if full_title else None
+        result["episode_title"] = None
+    else:
+        result["is_movie_special"] = False
+
     # Try to find year
     year_match = YEAR_PATTERN.search(filename) or YEAR_PATTERN.search(parent)
     if year_match:
@@ -185,7 +201,7 @@ def parse_filename(filepath: str) -> dict:
     cleaned = clean_title(raw)
 
     # If we have no season/episode from filename or parent, try folder fallback
-    if result["season"] is None:
+    if result["season"] is None and not result.get("is_movie_special"):
         # Try parent folder for season
         season_from_parent = extract_season_from_folder(parent)
         if season_from_parent:
@@ -225,7 +241,8 @@ def parse_filename(filepath: str) -> dict:
             cleaned = None
 
     result["raw_title"] = raw.strip().rstrip('[](). -')
-    result["cleaned_title"] = cleaned
+    if not result.get("is_movie_special"):
+        result["cleaned_title"] = cleaned
     result["quality"] = extract_quality_info(filename)
 
     return result
