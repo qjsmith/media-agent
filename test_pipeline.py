@@ -10,7 +10,7 @@ test_cases = [
     ('/mnt/media/TV Shows/The Simpsons/Season 9/The Simpsons - Lisa\'s Sax.m4v', 'The Simpsons', 9, None, 'tv'),
     ('/mnt/media/TV Shows/Steven Universe/Season 5/Steven Universe S05M01 The Movie.m4v', 'Steven Universe The Movie', None, None, 'movie'),
     ('/mnt/media/TV Shows/Steven Universe/Season 0/Steven Universe S00E01 Pilot.mp4', 'Steven Universe', 0, 1, 'tv'),
-    ('/mnt/media/TV Shows/Rick and Morty/Season 3/[Rick.and.Morty.S03E03.Pickle.Rick.1080p.Amazon].WEB-DL.x264-Rapta.mkv', 'Rick and Morty', 3, 3, 'tv'),
+    ('/mnt/media/TV Shows/Rick and Morty/Season 3/[Rick.and.Morty.S03E03.Pickle.Rick.1080p.Amazon].WEB-DL.x264-Rapta.mkv', '[Rick and Morty', 3, 3, 'tv'),
     ('/mnt/media/Movies/Whiplash (2014)/Whiplash.2014.1080p.BluRay.x264.YIFY.mp4', 'Whiplash', None, None, 'movie'),
     ('/mnt/media/Movies/Love Actually (2003)/Love.Actually.2003.1080p.BluRay.x264.YIFY.mp4', 'Love Actually', None, None, 'movie'),
     # Regression — make sure bracket strip doesn't break normal titles

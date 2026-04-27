@@ -118,7 +118,7 @@ def clean_title(raw: str) -> str:
     """Remove junk words and normalize a raw title string."""
     title = re.sub(r'[._]', ' ', raw)
     # Strip leading bracket if filename starts with one e.g. [Rick.and.Morty...]
-    title = re.sub(r'^\s*[\[\(]', '', title)
+    title = re.sub(r'^\s*\[[^\]]*\]\s*', '', title)
     title = re.sub(r'[\[\(].*?[\]\)]', '', title)
     title = re.sub(r'[\(\[]?(19|20)\d{2}[\)\]]?', '', title)
     words = [w for w in title.split() if w.lower() not in JUNK_WORDS]
