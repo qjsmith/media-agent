@@ -91,6 +91,8 @@ def extract_show_name_from_folder(folder: str) -> str | None:
     name = re.sub(r'[Ss]eason\s+\d+.*$', '', name, flags=re.IGNORECASE)
     # Strip quality tags
     name = re.sub(r'\b(480p|720p|1080p|2160p|4k|uhd|bluray|webrip|webdl|web-dl|hdtv|dvdrip|x264|x265|h264|h265|mp4)\b.*$', '', name, flags=re.IGNORECASE)
+    # Strip year in parentheses e.g. "Whiplash (2014)" → "Whiplash"
+    name = re.sub(r'\s*[\(\[](19|20)\d{2}[\)\]]\s*', '', name).strip()
     # Normalize dots, dashes, underscores
     name = re.sub(r'[._]', ' ', name)
     name = re.sub(r'\s*-\s*$', '', name)
@@ -116,7 +118,7 @@ def clean_title(raw: str) -> str:
     """Remove junk words and normalize a raw title string."""
     title = re.sub(r'[._]', ' ', raw)
     title = re.sub(r'[\[\(].*?[\]\)]', '', title)
-    title = re.sub(r'\b(19|20)\d{2}\b', '', title)
+    title = re.sub(r'[\(\[]?(19|20)\d{2}[\)\]]?', '', title)
     words = [w for w in title.split() if w.lower() not in JUNK_WORDS]
     return ' '.join(words).strip()
 
