@@ -17,6 +17,8 @@ test_cases = [
     ('/mnt/media/TV Shows/The Simpsons/Season 10/The Simpsons [10x12] Sunday Cruddy Sunday.avi', 'The Simpsons', 10, 12, 'tv'),
     ('/mnt/media/Movies/The Grand Budapest Hotel (2014)/The.Grand.Budapest.Hotel.2014.1080p.BRRip.x264.mp4', 'The Grand Budapest Hotel', None, None, 'movie'),
     ('/mnt/media/TV Shows/Hey Arnold/Season 5/Hey.Arnold.S05E07.avi', 'Hey Arnold', 5, 7, 'tv'),
+    ('/mnt/media/TV Shows/Rick and Morty/Season 1/[pseudo] Rick and Morty S01E02 Lawnmower Dog [BDRip] [1080p] [h.265].mkv', 'Rick and Morty', 1, 2, 'tv'),
+    ('/mnt/media/TV Shows/Severance/Season 1/Severance.S01E04.720p.ATVP.WEBRip.x264-GalaxyTV.mkv', 'Severance', 1, 4, 'tv'),
 ]
 
 passed = 0
