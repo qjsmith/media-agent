@@ -5,6 +5,8 @@ from pathlib import Path
 # Matches S01E01 or 1x01 style season/episode patterns
 EPISODE_PATTERN_SXE = re.compile(r'[Ss](\d{1,2})[Ee](\d{1,2})')
 EPISODE_PATTERN_XY = re.compile(r'(?<!\d)(\d{1,2})[xX](\d{1,2})(?!\d)')
+# Matches _507_ style episode codes e.g. Hey.Arnold!_507__Married--
+EPISODE_PATTERN_UNDERSCORE = re.compile(r'_(\d)(\d{2})_')
 
 YEAR_PATTERN = re.compile(
     r'[\.\s\(\[]?((?:19|20)\d{2})[\.\s\)\]]?'
@@ -23,7 +25,9 @@ JUNK_WORDS = {
     'xvid', 'x264', 'x265', 'h264', 'h265', 'aac', 'mp3', 'dts', 'ac3',
     'rarbg', 'yify', 'proper', 'repack', 'extended', 'theatrical',
     '1080p', '720p', '480p', '2160p', '4k', 'hdr', 'uhd', 'remux',
-    'complete', 'season', 'episode', 'final', 'v2', 'v3', 'mp4'
+    'complete', 'season', 'episode', 'final', 'v2', 'v3', 'mp4',
+    'french', 'hindi', 'german', 'spanish', 'italian', 'portuguese',
+    'dubbed', 'subbed', 'multi',
 }
 
 USELESS_FOLDERS = {'media', 'tv shows', 'movies', 'tv', 'films', 'video'}
@@ -49,6 +53,10 @@ def find_episode(text: str):
     m = EPISODE_PATTERN_XY.search(text)
     if m:
         return m, int(m.group(1)), int(m.group(2))
+    
+    m = EPISODE_PATTERN_UNDERSCORE.search(text)
+    if m:
+        return m, int(m.group(1)), int(m.group(2))
 
     return None, None, None
 
@@ -72,6 +80,11 @@ def extract_season_from_folder(folder: str) -> int | None:
     m = SEASON_PATTERN_LEADING.match(folder)
     if m:
         return int(m.group(1))
+    
+    # Version N.N style e.g. "Version 5.0" → season 5
+    m = re.compile(r'[Vv]ersion\s+(\d+)', re.IGNORECASE).search(folder)
+    if m:
+        return int(m.group(1))
 
     return None
 
@@ -81,6 +94,9 @@ def extract_show_name_from_folder(folder: str) -> str | None:
     Try to extract a clean show name from a folder name by stripping
     season info, junk words, and quality tags.
     """
+    # Ignore version-style folder names e.g. "Version 5.0"
+    if re.match(r'^[Vv]ersion\s+\d', folder):
+        return None
     # Strip leading digits (Simpsons style)
     name = re.sub(r'^\d+', '', folder)
     # Strip S01 style tags and everything after
@@ -93,12 +109,18 @@ def extract_show_name_from_folder(folder: str) -> str | None:
     name = re.sub(r'\b(480p|720p|1080p|2160p|4k|uhd|bluray|webrip|webdl|web-dl|hdtv|dvdrip|x264|x265|h264|h265|mp4)\b.*$', '', name, flags=re.IGNORECASE)
     # Strip year in parentheses e.g. "Whiplash (2014)" → "Whiplash"
     name = re.sub(r'\s*[\(\[](19|20)\d{2}[\)\]]\s*', '', name).strip()
+    # Strip common qualifiers e.g. (dubbed), (extended), (director's cut)
+    name = re.sub(r'\s*\((dubbed|subbed|extended|theatrical|directors.cut|unrated)\)\s*', '', name, flags=re.IGNORECASE).strip()
     # Normalize dots, dashes, underscores
     name = re.sub(r'[._]', ' ', name)
     name = re.sub(r'\s*-\s*$', '', name)
     name = name.strip()
 
     if len(name) < 2 or name.lower() in USELESS_FOLDERS:
+        return None
+    
+    # If result still looks like a junk folder name (has year or quality tags), reject it
+    if re.search(r'\b(19|20)\d{2}\b', name):
         return None
 
     return name
@@ -117,8 +139,8 @@ def extract_quality_info(filename: str) -> dict:
 def clean_title(raw: str) -> str:
     """Remove junk words and normalize a raw title string."""
     title = re.sub(r'[._]', ' ', raw)
-    # Strip leading bracket if filename starts with one e.g. [Rick.and.Morty...]
-    title = re.sub(r'^\s*\[[^\]]*\]\s*', '', title)
+    # Strip complete [group tag] at start e.g. [pseudo] or lone leading [
+    title = re.sub(r'^\s*\[[^\]]*\]\s*|^\s*\[', '', title)
     title = re.sub(r'[\[\(].*?[\]\)]', '', title)
     title = re.sub(r'[\(\[]?(19|20)\d{2}[\)\]]?', '', title)
     words = [w for w in title.split() if w.lower() not in JUNK_WORDS]

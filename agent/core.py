@@ -19,6 +19,14 @@ def detect_media_type(parsed: dict) -> str:
         return "movie"
     if parsed["season"] is not None or parsed["episode"] is not None:
         return "tv"
+    
+    # Check full path for Movies/TV Shows folders
+    full_path = parsed.get("original_path", "").lower()
+    if "/movies/" in full_path:
+        return "movie"
+    if "/tv shows/" in full_path or "/tv/" in full_path:
+        return "tv"
+    
     parent = parsed["context"]["parent_folder"].lower()
     grandparent = parsed["context"]["grandparent_folder"].lower()
     if "movie" in parent or "film" in parent:
