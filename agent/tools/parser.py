@@ -58,6 +58,11 @@ def find_episode(text: str):
     if m:
         return m, int(m.group(1)), int(m.group(2))
 
+    # Season-only fallback e.g. "S05" with no episode number
+    m = SEASON_PATTERN_S.search(text)
+    if m and not EPISODE_PATTERN_SXE.search(text) and not re.search(r'[Ss]\d{1,2}[Mm]\d{1,2}', text):
+        return m, int(m.group(1)), None
+
     return None, None, None
 
 
