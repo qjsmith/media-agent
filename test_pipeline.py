@@ -43,6 +43,9 @@ test_cases = [
     ('/mnt/media/Movies/To the Forest of Firefly Lights (2011)/[Aenianos] Hotarubi no Mori e (BD 1080p hi10p FLAC) [rich_jc].mkv', 'To the Forest of Firefly Lights', None, None, 'movie'),
     ('/mnt/media/Movies/A Silent Voice (2016)/A.Silent.Voice.2016.1080p.BluRay.x264-[YTS.AM].mp4', 'A Silent Voice', None, None, 'movie'),
 
+    # 30 for 30 — grandparent folder "30 for 30" should not be parsed as season 30
+    ('/mnt/media/Movies/30 for 30/The Fab Five (2011)/The Fab Five (2011).avi', 'The Fab Five', None, None, 'movie'),
+
     # --- Cases that should stay flagged/skipped (correctly handled) ---
     # Springfield.mp4 — genuinely unidentifiable, expect None title or Simpsons
     # Hey Arnold Bonus — no TMDB match, correctly flagged
