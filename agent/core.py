@@ -10,7 +10,7 @@ from agent.tools.logger import log_decision
 
 CONFIDENCE_THRESHOLD = 90.0
 DRY_RUN = True        # Set to False when you're ready to actually rename files
-LLM_CALL_LIMIT = 5   # Max LLM calls per run while testing
+LLM_CALL_LIMIT = 25   # Max LLM calls per run while testing
 
 
 def detect_media_type(parsed: dict) -> str:
