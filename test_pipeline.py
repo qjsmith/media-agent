@@ -99,3 +99,36 @@ for path, exp_title, exp_season, exp_episode, exp_type in test_cases:
         print(f'  score:    {result["score"]}')
         print(f'  match:    {result["match"]["title"] if result["match"] else "NO MATCH"}')
         print(f'  new_path: {new_path}')
+
+print(f'\n--- Episode title lookup tests ---')
+from agent.tools.metadata import search_tmdb, search_episode_by_title
+
+episode_lookup_cases = [
+    # (show_name, season, episode_title, expected_episode_number)
+    ('The Simpsons', 5, 'Cape Feare', 2),
+    ('The Simpsons', 5, 'Homer Goes To College', 3),
+    ('The Simpsons', 5, 'Rosebud', 4),
+    ('The IT Crowd', 5, 'The Internet Is Coming', None),  # TMDB has no season 5
+]
+
+ep_passed = 0
+ep_failed = 0
+
+for show_name, season, episode_title, expected_ep in episode_lookup_cases:
+    candidates = search_tmdb(show_name, 'tv')
+    if not candidates:
+        print(f'✗ FAIL: {show_name} — no TMDB match')
+        ep_failed += 1
+        continue
+    show_id = candidates[0]['id']
+    result = search_episode_by_title(show_id, season, episode_title)
+    got_ep = result['episode_number'] if result else None
+    if got_ep == expected_ep:
+        ep_passed += 1
+        ep_str = f"E{got_ep:02d}" if got_ep is not None else "None"
+        print(f'✓ PASS: {show_name} S{season:02d} "{episode_title}" → {ep_str}')
+    else:
+        ep_failed += 1
+        print(f'✗ FAIL: {show_name} S{season:02d} "{episode_title}" → got={got_ep} expected={expected_ep}')
+
+print(f'\n{ep_passed}/{ep_passed+ep_failed} episode lookup tests passed')
