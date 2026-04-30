@@ -9,7 +9,7 @@ from agent.tools.renamer import build_tv_path, build_movie_path, rename_file
 from agent.tools.logger import log_decision
 
 CONFIDENCE_THRESHOLD = 90.0
-DRY_RUN = True        # Set to False when you're ready to actually rename files
+DRY_RUN = False        # Set to False when you're ready to actually rename files
 LLM_CALL_LIMIT = 25   # Max LLM calls per run while testing
 
 
