@@ -43,8 +43,15 @@ test_cases = [
     ('/mnt/media/Movies/To the Forest of Firefly Lights (2011)/[Aenianos] Hotarubi no Mori e (BD 1080p hi10p FLAC) [rich_jc].mkv', 'To the Forest of Firefly Lights', None, None, 'movie'),
     ('/mnt/media/Movies/A Silent Voice (2016)/A.Silent.Voice.2016.1080p.BluRay.x264-[YTS.AM].mp4', 'A Silent Voice', None, None, 'movie'),
 
-    # 30 for 30 — grandparent folder "30 for 30" should not be parsed as season 30
-    ('/mnt/media/Movies/30 for 30/The Fab Five (2011)/The Fab Five (2011).avi', 'The Fab Five', None, None, 'movie'),
+    # More Simpsons Season 5 — same folder pattern
+    ('/mnt/media/TV Shows/The Simpsons/5The Simpsons - Season Five/Homer Goes To College.mp4', 'The Simpsons', 5, None, 'tv'),
+    ('/mnt/media/TV Shows/The Simpsons/5The Simpsons - Season Five/Rosebud.mp4', 'The Simpsons', 5, None, 'tv'),
+    ('/mnt/media/TV Shows/The Simpsons/5The Simpsons - Season Five/Treehouse of Horror IV.mp4', 'The Simpsons', 5, None, 'tv'),
+
+    # More 30 for 30 — make sure other docs in the folder don't get season 30
+    ('/mnt/media/Movies/30 for 30/The Birth of Big Air (2009)/The Birth of Big Air (2009).avi', 'The Birth of Big Air', None, None, 'movie'),
+    ('/mnt/media/Movies/30 for 30/Winning Time Reggie Miller vs The New York Knicks (2010)/Winning Time Reggie Miller vs The New York Knicks (2010).avi', 'Winning Time Reggie Miller vs The New York Knicks', None, None, 'movie'),
+
 
     # --- Cases that should stay flagged/skipped (correctly handled) ---
     # Springfield.mp4 — genuinely unidentifiable, expect None title or Simpsons

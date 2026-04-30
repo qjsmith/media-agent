@@ -15,7 +15,7 @@ YEAR_PATTERN = re.compile(
 # Season-only patterns for folder names
 SEASON_PATTERN_S = re.compile(r'[Ss](\d{1,2})')
 SEASON_PATTERN_WORD = re.compile(r'[Ss]eason\s+(\d+)', re.IGNORECASE)
-SEASON_PATTERN_LEADING = re.compile(r'^(\d{1,2})\s+[A-Z]')
+SEASON_PATTERN_LEADING = re.compile(r'^(\d{1,2})\s*[A-Z]')
 
 # Movie Pattern
 MOVIE_SPECIAL_PATTERN = re.compile(r'[Ss](\d{1,2})[Mm](\d{1,2})')
