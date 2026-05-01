@@ -13,11 +13,17 @@ dependencies = [
     "plexapi>=4.18.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.0",
+    "ruff>=0.15.0",
+]
+
 [tool.setuptools.packages.find]
 include = ["agent*"]
 
 [tool.ruff]
-line-length = 88
+line-height = 88
 target-version = "py312"
 
 [tool.ruff.lint]
