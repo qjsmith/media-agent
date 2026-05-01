@@ -3,40 +3,79 @@ from pathlib import Path
 
 
 # Matches S01E01 or 1x01 style season/episode patterns
-EPISODE_PATTERN_SXE = re.compile(r'[Ss](\d{1,2})[Ee](\d{1,2})')
-EPISODE_PATTERN_XY = re.compile(r'(?<!\d)(\d{1,2})[xX](\d{1,2})(?!\d)')
+EPISODE_PATTERN_SXE = re.compile(r"[Ss](\d{1,2})[Ee](\d{1,2})")
+EPISODE_PATTERN_XY = re.compile(r"(?<!\d)(\d{1,2})[xX](\d{1,2})(?!\d)")
 # Matches _507_ style episode codes e.g. Hey.Arnold!_507__Married--
-EPISODE_PATTERN_UNDERSCORE = re.compile(r'_(\d)(\d{2})_')
+EPISODE_PATTERN_UNDERSCORE = re.compile(r"_(\d)(\d{2})_")
 
-YEAR_PATTERN = re.compile(
-    r'[\.\s\(\[]?((?:19|20)\d{2})[\.\s\)\]]?'
-)
+YEAR_PATTERN = re.compile(r"[\.\s\(\[]?((?:19|20)\d{2})[\.\s\)\]]?")
 
 # Season-only patterns for folder names
-SEASON_PATTERN_S = re.compile(r'[Ss](\d{1,2})')
-SEASON_PATTERN_WORD = re.compile(r'[Ss]eason\s+(\d+)', re.IGNORECASE)
-SEASON_PATTERN_LEADING = re.compile(r'^(\d{1,2})\s*[A-Z]')
+SEASON_PATTERN_S = re.compile(r"[Ss](\d{1,2})")
+SEASON_PATTERN_WORD = re.compile(r"[Ss]eason\s+(\d+)", re.IGNORECASE)
+SEASON_PATTERN_LEADING = re.compile(r"^(\d{1,2})\s*[A-Z]")
 
 # Movie Pattern
-MOVIE_SPECIAL_PATTERN = re.compile(r'[Ss](\d{1,2})[Mm](\d{1,2})')
+MOVIE_SPECIAL_PATTERN = re.compile(r"[Ss](\d{1,2})[Mm](\d{1,2})")
 
 JUNK_WORDS = {
-    'bluray', 'blu-ray', 'webrip', 'webdl', 'web-dl', 'hdtv', 'dvdrip',
-    'xvid', 'x264', 'x265', 'h264', 'h265', 'aac', 'mp3', 'dts', 'ac3',
-    'rarbg', 'yify', 'proper', 'repack', 'extended', 'theatrical',
-    '1080p', '720p', '480p', '2160p', '4k', 'hdr', 'uhd', 'remux',
-    'complete', 'season', 'episode', 'final', 'v2', 'v3', 'mp4',
-    'french', 'hindi', 'german', 'spanish', 'italian', 'portuguese',
-    'dubbed', 'subbed', 'multi',
+    "bluray",
+    "blu-ray",
+    "webrip",
+    "webdl",
+    "web-dl",
+    "hdtv",
+    "dvdrip",
+    "xvid",
+    "x264",
+    "x265",
+    "h264",
+    "h265",
+    "aac",
+    "mp3",
+    "dts",
+    "ac3",
+    "rarbg",
+    "yify",
+    "proper",
+    "repack",
+    "extended",
+    "theatrical",
+    "1080p",
+    "720p",
+    "480p",
+    "2160p",
+    "4k",
+    "hdr",
+    "uhd",
+    "remux",
+    "complete",
+    "season",
+    "episode",
+    "final",
+    "v2",
+    "v3",
+    "mp4",
+    "french",
+    "hindi",
+    "german",
+    "spanish",
+    "italian",
+    "portuguese",
+    "dubbed",
+    "subbed",
+    "multi",
 }
 
-USELESS_FOLDERS = {'media', 'tv shows', 'movies', 'tv', 'films', 'video'}
+USELESS_FOLDERS = {"media", "tv shows", "movies", "tv", "films", "video"}
 
 QUALITY_PATTERNS = {
-    "resolution": re.compile(r'\b(480p|720p|1080p|2160p|4k|uhd)\b', re.IGNORECASE),
-    "source": re.compile(r'\b(bluray|blu-ray|webrip|webdl|web-dl|hdtv|dvdrip|remux)\b', re.IGNORECASE),
-    "codec": re.compile(r'\b(x264|x265|h264|h265|xvid)\b', re.IGNORECASE),
-    "audio": re.compile(r'\b(aac|mp3|dts|ac3|atmos|truehd)\b', re.IGNORECASE),
+    "resolution": re.compile(r"\b(480p|720p|1080p|2160p|4k|uhd)\b", re.IGNORECASE),
+    "source": re.compile(
+        r"\b(bluray|blu-ray|webrip|webdl|web-dl|hdtv|dvdrip|remux)\b", re.IGNORECASE
+    ),
+    "codec": re.compile(r"\b(x264|x265|h264|h265|xvid)\b", re.IGNORECASE),
+    "audio": re.compile(r"\b(aac|mp3|dts|ac3|atmos|truehd)\b", re.IGNORECASE),
 }
 
 
@@ -53,14 +92,18 @@ def find_episode(text: str):
     m = EPISODE_PATTERN_XY.search(text)
     if m:
         return m, int(m.group(1)), int(m.group(2))
-    
+
     m = EPISODE_PATTERN_UNDERSCORE.search(text)
     if m:
         return m, int(m.group(1)), int(m.group(2))
 
     # Season-only fallback e.g. "S05" with no episode number
     m = SEASON_PATTERN_S.search(text)
-    if m and not EPISODE_PATTERN_SXE.search(text) and not re.search(r'[Ss]\d{1,2}[Mm]\d{1,2}', text):
+    if (
+        m
+        and not EPISODE_PATTERN_SXE.search(text)
+        and not re.search(r"[Ss]\d{1,2}[Mm]\d{1,2}", text)
+    ):
         return m, int(m.group(1)), None
 
     return None, None, None
@@ -85,9 +128,9 @@ def extract_season_from_folder(folder: str) -> int | None:
     m = SEASON_PATTERN_LEADING.match(folder)
     if m:
         return int(m.group(1))
-    
+
     # Version N.N style e.g. "Version 5.0" → season 5
-    m = re.compile(r'[Vv]ersion\s+(\d+)', re.IGNORECASE).search(folder)
+    m = re.compile(r"[Vv]ersion\s+(\d+)", re.IGNORECASE).search(folder)
     if m:
         return int(m.group(1))
 
@@ -100,32 +143,42 @@ def extract_show_name_from_folder(folder: str) -> str | None:
     season info, junk words, and quality tags.
     """
     # Ignore version-style folder names e.g. "Version 5.0"
-    if re.match(r'^[Vv]ersion\s+\d', folder):
+    if re.match(r"^[Vv]ersion\s+\d", folder):
         return None
     # Strip leading digits (Simpsons style)
-    name = re.sub(r'^\d+', '', folder)
+    name = re.sub(r"^\d+", "", folder)
     # Strip S01 style tags and everything after
-    name = re.sub(r'[Ss]\d{2}.*$', '', name)
+    name = re.sub(r"[Ss]\d{2}.*$", "", name)
     # Strip written-out season names e.g. "- Season Five"
-    name = re.sub(r'\s*-\s*Season\s+\w+.*$', '', name, flags=re.IGNORECASE)
+    name = re.sub(r"\s*-\s*Season\s+\w+.*$", "", name, flags=re.IGNORECASE)
     # Strip "Season N" and everything after
-    name = re.sub(r'[Ss]eason\s+\d+.*$', '', name, flags=re.IGNORECASE)
+    name = re.sub(r"[Ss]eason\s+\d+.*$", "", name, flags=re.IGNORECASE)
     # Strip quality tags
-    name = re.sub(r'\b(480p|720p|1080p|2160p|4k|uhd|bluray|webrip|webdl|web-dl|hdtv|dvdrip|x264|x265|h264|h265|mp4)\b.*$', '', name, flags=re.IGNORECASE)
+    name = re.sub(
+        r"\b(480p|720p|1080p|2160p|4k|uhd|bluray|webrip|webdl|web-dl|hdtv|dvdrip|x264|x265|h264|h265|mp4)\b.*$",
+        "",
+        name,
+        flags=re.IGNORECASE,
+    )
     # Strip year in parentheses e.g. "Whiplash (2014)" → "Whiplash"
-    name = re.sub(r'\s*[\(\[](19|20)\d{2}[\)\]]\s*', '', name).strip()
+    name = re.sub(r"\s*[\(\[](19|20)\d{2}[\)\]]\s*", "", name).strip()
     # Strip common qualifiers e.g. (dubbed), (extended), (director's cut)
-    name = re.sub(r'\s*\((dubbed|subbed|extended|theatrical|directors.cut|unrated)\)\s*', '', name, flags=re.IGNORECASE).strip()
+    name = re.sub(
+        r"\s*\((dubbed|subbed|extended|theatrical|directors.cut|unrated)\)\s*",
+        "",
+        name,
+        flags=re.IGNORECASE,
+    ).strip()
     # Normalize dots, dashes, underscores
-    name = re.sub(r'[._]', ' ', name)
-    name = re.sub(r'\s*-\s*$', '', name)
+    name = re.sub(r"[._]", " ", name)
+    name = re.sub(r"\s*-\s*$", "", name)
     name = name.strip()
 
     if len(name) < 2 or name.lower() in USELESS_FOLDERS:
         return None
-    
+
     # If result still looks like a junk folder name (has year or quality tags), reject it
-    if re.search(r'\b(19|20)\d{2}\b', name):
+    if re.search(r"\b(19|20)\d{2}\b", name):
         return None
 
     return name
@@ -143,29 +196,55 @@ def extract_quality_info(filename: str) -> dict:
 
 def clean_title(raw: str) -> str:
     """Remove junk words and normalize a raw title string."""
-    title = re.sub(r'[._]', ' ', raw)
+    title = re.sub(r"[._]", " ", raw)
     # Strip complete [group tag] at start e.g. [pseudo] or lone leading [
-    title = re.sub(r'^\s*\[[^\]]*\]\s*|^\s*\[', '', title)
-    title = re.sub(r'[\[\(].*?[\]\)]', '', title)
-    title = re.sub(r'[\(\[]?(19|20)\d{2}[\)\]]?', '', title)
+    title = re.sub(r"^\s*\[[^\]]*\]\s*|^\s*\[", "", title)
+    title = re.sub(r"[\[\(].*?[\]\)]", "", title)
+    title = re.sub(r"[\(\[]?(19|20)\d{2}[\)\]]?", "", title)
     words = [w for w in title.split() if w.lower() not in JUNK_WORDS]
-    return ' '.join(words).strip()
+    return " ".join(words).strip()
 
 
 def clean_episode_title(raw: str) -> str:
     """Clean a filename for use as an episode title — strips quality tags but keeps common words."""
-    title = re.sub(r'[._]', ' ', raw)
-    title = re.sub(r'[\[\(].*?[\]\)]', '', title)
-    title = re.sub(r'\b(19|20)\d{2}\b', '', title)
+    title = re.sub(r"[._]", " ", raw)
+    title = re.sub(r"[\[\(].*?[\]\)]", "", title)
+    title = re.sub(r"\b(19|20)\d{2}\b", "", title)
     # Only strip quality/technical words, not common english words
     quality_junk = {
-        'bluray', 'blu-ray', 'webrip', 'webdl', 'web-dl', 'hdtv', 'dvdrip',
-        'xvid', 'x264', 'x265', 'h264', 'h265', 'aac', 'mp3', 'dts', 'ac3',
-        'rarbg', 'yify', 'proper', 'repack', '1080p', '720p', '480p',
-        '2160p', '4k', 'hdr', 'uhd', 'remux', 'v2', 'v3'
+        "bluray",
+        "blu-ray",
+        "webrip",
+        "webdl",
+        "web-dl",
+        "hdtv",
+        "dvdrip",
+        "xvid",
+        "x264",
+        "x265",
+        "h264",
+        "h265",
+        "aac",
+        "mp3",
+        "dts",
+        "ac3",
+        "rarbg",
+        "yify",
+        "proper",
+        "repack",
+        "1080p",
+        "720p",
+        "480p",
+        "2160p",
+        "4k",
+        "hdr",
+        "uhd",
+        "remux",
+        "v2",
+        "v3",
     }
     words = [w for w in title.split() if w.lower() not in quality_junk]
-    return ' '.join(words).strip()
+    return " ".join(words).strip()
 
 
 def parse_filename(filepath: str) -> dict:
@@ -189,10 +268,7 @@ def parse_filename(filepath: str) -> dict:
         "cleaned_title": None,
         "episode_title": None,
         "quality": {},
-        "context": {
-            "parent_folder": parent,
-            "grandparent_folder": grandparent
-        }
+        "context": {"parent_folder": parent, "grandparent_folder": grandparent},
     }
 
     # Try to find season/episode in filename first, then parent folder
@@ -208,8 +284,8 @@ def parse_filename(filepath: str) -> dict:
     movie_special_match = MOVIE_SPECIAL_PATTERN.search(filename)
     if movie_special_match:
         result["is_movie_special"] = True
-        before = filename[:movie_special_match.start()].strip().rstrip('-_ ')
-        after = filename[movie_special_match.end():].strip().lstrip('-_ ')
+        before = filename[: movie_special_match.start()].strip().rstrip("-_ ")
+        after = filename[movie_special_match.end() :].strip().lstrip("-_ ")
         # Combine show name + movie title e.g. "Steven Universe The Movie"
         full_title = f"{before} {after}".strip() if after else before
         result["cleaned_title"] = clean_title(full_title) if full_title else None
@@ -224,7 +300,7 @@ def parse_filename(filepath: str) -> dict:
 
     # Extract raw title - everything before the season/episode marker
     if ep_match:
-        raw = filename[:ep_match.start()].strip().rstrip('[](). -')
+        raw = filename[: ep_match.start()].strip().rstrip("[](). -")
     else:
         raw = filename
 
@@ -248,7 +324,9 @@ def parse_filename(filepath: str) -> dict:
         if SEASON_PATTERN_WORD.match(parent.strip()):
             show_name = extract_show_name_from_folder(grandparent)
         else:
-            show_name = extract_show_name_from_folder(parent) or extract_show_name_from_folder(grandparent)
+            show_name = extract_show_name_from_folder(
+                parent
+            ) or extract_show_name_from_folder(grandparent)
 
         if show_name:
             cleaned = show_name
@@ -257,7 +335,7 @@ def parse_filename(filepath: str) -> dict:
             # Strip the show name from the front if it's there
             # e.g. "The Simpsons - Lisa's Sax" → "Lisa's Sax"
             if raw_episode_title.lower().startswith(show_name.lower()):
-                raw_episode_title = raw_episode_title[len(show_name):].lstrip(' -')
+                raw_episode_title = raw_episode_title[len(show_name) :].lstrip(" -")
             result["episode_title"] = raw_episode_title
 
     # Final fallback if still empty
@@ -266,12 +344,15 @@ def parse_filename(filepath: str) -> dict:
         grandparent_cleaned = clean_title(grandparent)
         if parent_cleaned.lower() not in USELESS_FOLDERS and len(parent_cleaned) > 2:
             cleaned = parent_cleaned
-        elif grandparent_cleaned.lower() not in USELESS_FOLDERS and len(grandparent_cleaned) > 2:
+        elif (
+            grandparent_cleaned.lower() not in USELESS_FOLDERS
+            and len(grandparent_cleaned) > 2
+        ):
             cleaned = grandparent_cleaned
         else:
             cleaned = None
 
-    result["raw_title"] = raw.strip().rstrip('[](). -')
+    result["raw_title"] = raw.strip().rstrip("[](). -")
     if not result.get("is_movie_special"):
         result["cleaned_title"] = cleaned
     result["quality"] = extract_quality_info(filename)

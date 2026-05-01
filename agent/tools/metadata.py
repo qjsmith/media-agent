@@ -8,10 +8,7 @@ TMDB_TIMEOUT = 10  # seconds
 def search_tmdb(title: str, media_type: str = "tv") -> list[dict]:
     """Search TMDB for a show or movie by title."""
     url = f"{TMDB_BASE_URL}/search/{media_type}"
-    params = {
-        "api_key": TMDB_API_KEY,
-        "query": title
-    }
+    params = {"api_key": TMDB_API_KEY, "query": title}
     try:
         response = requests.get(url, params=params, timeout=TMDB_TIMEOUT)
         if response.status_code != 200:
@@ -23,7 +20,7 @@ def search_tmdb(title: str, media_type: str = "tv") -> list[dict]:
                 "title": r.get("name") or r.get("title"),
                 "year": (r.get("first_air_date") or r.get("release_date") or "")[:4],
                 "popularity": r.get("popularity"),
-                "overview": r.get("overview")
+                "overview": r.get("overview"),
             }
             for r in results[:5]
         ]
@@ -46,7 +43,7 @@ def get_episode_details(show_id: int, season: int, episode: int) -> dict:
             "overview": data.get("overview"),
             "air_date": data.get("air_date"),
             "season": season,
-            "episode": episode
+            "episode": episode,
         }
     except requests.exceptions.RequestException as e:
         print(f"  [TMDB] get_episode_details error: {e}")
@@ -66,13 +63,14 @@ def search_episode_by_title(show_id: int, season: int, episode_title: str) -> di
             return {}
 
         from thefuzz import fuzz
+
         best_score = 0
         best_episode = {}
         for ep in episodes:
             ep_name = ep.get("name", "")
             score = max(
                 fuzz.token_sort_ratio(episode_title.lower(), ep_name.lower()),
-                fuzz.ratio(episode_title.lower(), ep_name.lower())
+                fuzz.ratio(episode_title.lower(), ep_name.lower()),
             )
             if score > best_score:
                 best_score = score
@@ -84,7 +82,7 @@ def search_episode_by_title(show_id: int, season: int, episode_title: str) -> di
                 "episode_number": best_episode.get("episode_number"),
                 "season": season,
                 "overview": best_episode.get("overview"),
-                "air_date": best_episode.get("air_date")
+                "air_date": best_episode.get("air_date"),
             }
         return {}
 

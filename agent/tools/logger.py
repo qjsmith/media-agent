@@ -32,21 +32,26 @@ def init_db():
     conn.close()
 
 
-def log_decision(filename: str, action: str, reasoning: str, success: bool, details: dict = None):
+def log_decision(
+    filename: str, action: str, reasoning: str, success: bool, details: dict = None
+):
     """Log an agent decision to today's database."""
     init_db()
     conn = sqlite3.connect(get_db_path())
-    conn.execute("""
+    conn.execute(
+        """
         INSERT INTO decisions (timestamp, filename, action, reasoning, success, details)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        datetime.now().isoformat(),
-        filename,
-        action,
-        reasoning,
-        int(success),
-        json.dumps(details or {})
-    ))
+    """,
+        (
+            datetime.now().isoformat(),
+            filename,
+            action,
+            reasoning,
+            int(success),
+            json.dumps(details or {}),
+        ),
+    )
     conn.commit()
     conn.close()
 
@@ -55,12 +60,15 @@ def get_recent_decisions(limit: int = 20) -> list[dict]:
     """Retrieve recent decisions from today's database."""
     init_db()
     conn = sqlite3.connect(get_db_path())
-    cursor = conn.execute("""
+    cursor = conn.execute(
+        """
         SELECT timestamp, filename, action, reasoning, success, details
         FROM decisions
         ORDER BY timestamp DESC
         LIMIT ?
-    """, (limit,))
+    """,
+        (limit,),
+    )
     rows = cursor.fetchall()
     conn.close()
 
@@ -71,7 +79,7 @@ def get_recent_decisions(limit: int = 20) -> list[dict]:
             "action": r[2],
             "reasoning": r[3],
             "success": bool(r[4]),
-            "details": json.loads(r[5])
+            "details": json.loads(r[5]),
         }
         for r in rows
     ]

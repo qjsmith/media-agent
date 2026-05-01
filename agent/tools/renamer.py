@@ -1,12 +1,10 @@
-import os
 import re
 from pathlib import Path
-from agent.tools.metadata import get_episode_details
 
 
 def sanitize(name: str) -> str:
     """Remove characters that are invalid in filenames."""
-    return re.sub(r'[<>:"/\\|?*]', '', name).strip()
+    return re.sub(r'[<>:"/\\|?*]', "", name).strip()
 
 
 def build_tv_path(
@@ -16,7 +14,7 @@ def build_tv_path(
     season: int,
     episode: int,
     episode_title: str,
-    extension: str
+    extension: str,
 ) -> str:
     """Build TRaSH-standard TV path."""
     show_folder = sanitize(f"{show_title} ({show_year})")
@@ -28,10 +26,7 @@ def build_tv_path(
 
 
 def build_movie_path(
-    base_path: str,
-    movie_title: str,
-    movie_year: int,
-    extension: str
+    base_path: str, movie_title: str, movie_year: int, extension: str
 ) -> str:
     """Build TRaSH-standard movie path."""
     folder = sanitize(f"{movie_title} ({movie_year})")
@@ -56,7 +51,7 @@ def rename_file(original_path: str, new_path: str, dry_run: bool = True) -> dict
             "dry_run": True,
             "original": original_path,
             "new_path": new_path,
-            "reason": "Dry run — no files moved"
+            "reason": "Dry run — no files moved",
         }
 
     try:
@@ -66,7 +61,7 @@ def rename_file(original_path: str, new_path: str, dry_run: bool = True) -> dict
             "success": True,
             "dry_run": False,
             "original": original_path,
-            "new_path": new_path
+            "new_path": new_path,
         }
     except Exception as e:
         return {"success": False, "reason": str(e)}
@@ -81,7 +76,7 @@ if __name__ == "__main__":
         season=1,
         episode=3,
         episode_title="...And the Bag's in the River",
-        extension=".mkv"
+        extension=".mkv",
     )
     print(f"TV path: {tv_path}")
 
@@ -90,6 +85,6 @@ if __name__ == "__main__":
         base_path="/mnt/media/Movies",
         movie_title="Avatar",
         movie_year=2009,
-        extension=".mkv"
+        extension=".mkv",
     )
     print(f"Movie path: {movie_path}")

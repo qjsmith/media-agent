@@ -14,13 +14,9 @@ def score_match(parsed: dict, candidate: dict) -> float:
     if parsed["cleaned_title"] and candidate["title"]:
         title_score = max(
             fuzz.token_sort_ratio(
-                parsed["cleaned_title"].lower(),
-                candidate["title"].lower()
+                parsed["cleaned_title"].lower(), candidate["title"].lower()
             ),
-            fuzz.ratio(
-                parsed["cleaned_title"].lower(),
-                candidate["title"].lower()
-            )
+            fuzz.ratio(parsed["cleaned_title"].lower(), candidate["title"].lower()),
         )
         score += title_score * 0.6
         weights += 0.6
@@ -64,7 +60,7 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
             "score": 0.0,
             "ambiguous": False,
             "unidentifiable": True,
-            "candidates": []
+            "candidates": [],
         }
 
     candidates = search_tmdb(parsed["cleaned_title"], media_type)
@@ -75,7 +71,7 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
             "score": 0.0,
             "ambiguous": False,
             "unidentifiable": True,
-            "candidates": []
+            "candidates": [],
         }
 
     # Score all candidates
@@ -96,13 +92,11 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
         # If the best title match is near-perfect, don't call it ambiguous
         best_title_score = max(
             fuzz.token_sort_ratio(
-                parsed["cleaned_title"].lower(),
-                best["candidate"]["title"].lower()
+                parsed["cleaned_title"].lower(), best["candidate"]["title"].lower()
             ),
             fuzz.ratio(
-                parsed["cleaned_title"].lower(),
-                best["candidate"]["title"].lower()
-            )
+                parsed["cleaned_title"].lower(), best["candidate"]["title"].lower()
+            ),
         )
         if best_title_score < 95:
             ambiguous = True
@@ -112,17 +106,29 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
         "score": best["score"],
         "ambiguous": ambiguous,
         "unidentifiable": False,
-        "candidates": [s["candidate"] for s in scored[:3]]
+        "candidates": [s["candidate"] for s in scored[:3]],
     }
 
 
 if __name__ == "__main__":
     test_cases = [
-        ("Breaking.Bad.S01E03.720p.BluRay.mkv", "/mnt/media/TV Shows/Breaking.Bad.S01E03.720p.BluRay.mkv", "tv"),
+        (
+            "Breaking.Bad.S01E03.720p.BluRay.mkv",
+            "/mnt/media/TV Shows/Breaking.Bad.S01E03.720p.BluRay.mkv",
+            "tv",
+        ),
         ("avatar.2009.1080p.mkv", "/mnt/media/Movies/avatar.2009.1080p.mkv", "movie"),
         ("S02E03.mkv", "/mnt/media/TV Shows/The Office/Season 2/S02E03.mkv", "tv"),
-        ("Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4", "/mnt/media/TV Shows/Abbott Elementary/Season 2/Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4", "tv"),
-        ("Steven Universe S03E12 Restaurant Wars.mp4", "/mnt/media/TV Shows/Steven Universe/Season 3/Steven Universe S03E12 Restaurant Wars.mp4", "tv"),
+        (
+            "Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4",
+            "/mnt/media/TV Shows/Abbott Elementary/Season 2/Abbott.Elementary.S02E11.1080p.WEBRip.x265.mp4",
+            "tv",
+        ),
+        (
+            "Steven Universe S03E12 Restaurant Wars.mp4",
+            "/mnt/media/TV Shows/Steven Universe/Season 3/Steven Universe S03E12 Restaurant Wars.mp4",
+            "tv",
+        ),
     ]
 
     for name, path, media_type in test_cases:
