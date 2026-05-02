@@ -1,5 +1,5 @@
-import sqlite3
 import json
+import sqlite3
 from datetime import datetime
 from pathlib import Path
 
@@ -32,9 +32,7 @@ def init_db():
     conn.close()
 
 
-def log_decision(
-    filename: str, action: str, reasoning: str, success: bool, details: dict = None
-):
+def log_decision(filename: str, action: str, reasoning: str, success: bool, details: dict = None):
     """Log an agent decision to today's database."""
     init_db()
     conn = sqlite3.connect(get_db_path())

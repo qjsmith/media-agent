@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+
 from config import MEDIA_PATH
 
 VIDEO_EXTENSIONS = {".mkv", ".mp4", ".avi", ".mov", ".m4v"}

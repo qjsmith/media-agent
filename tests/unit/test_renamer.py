@@ -1,15 +1,17 @@
-from agent.tools.renamer import build_tv_path, build_movie_path, sanitize
-
+from agent.tools.renamer import build_movie_path, build_tv_path, sanitize
 
 # ---------------------------------------------------------------------------
 # sanitize
 # ---------------------------------------------------------------------------
 
+
 def test_sanitize_removes_colon():
     assert ":" not in sanitize("Breaking Bad: Season 1")
 
+
 def test_sanitize_removes_slash():
     assert "/" not in sanitize("AC/DC")
+
 
 def test_sanitize_clean_string_unchanged():
     assert sanitize("Breaking Bad") == "Breaking Bad"
@@ -18,6 +20,7 @@ def test_sanitize_clean_string_unchanged():
 # ---------------------------------------------------------------------------
 # build_tv_path
 # ---------------------------------------------------------------------------
+
 
 def test_build_tv_path_standard():
     path = build_tv_path(
@@ -34,6 +37,7 @@ def test_build_tv_path_standard():
     assert "S01E03" in path
     assert path.endswith(".mkv")
 
+
 def test_build_tv_path_double_digit_season():
     path = build_tv_path(
         base_path="/mnt/media/TV Shows",
@@ -46,6 +50,7 @@ def test_build_tv_path_double_digit_season():
     )
     assert "Season 10" in path
     assert "S10E12" in path
+
 
 def test_build_tv_path_structure():
     path = build_tv_path(
@@ -68,6 +73,7 @@ def test_build_tv_path_structure():
 # build_movie_path
 # ---------------------------------------------------------------------------
 
+
 def test_build_movie_path_standard():
     path = build_movie_path(
         base_path="/mnt/media/Movies",
@@ -77,6 +83,7 @@ def test_build_movie_path_standard():
     )
     assert "Whiplash (2014)" in path
     assert path.endswith(".mp4")
+
 
 def test_build_movie_path_structure():
     path = build_movie_path(
@@ -89,6 +96,7 @@ def test_build_movie_path_structure():
     # Should be: /mnt/media/Movies / Movie (Year) / Movie (Year).mkv
     assert parts[-2] == "The Grand Budapest Hotel (2014)"
     assert parts[-1] == "The Grand Budapest Hotel (2014).mkv"
+
 
 def test_build_movie_path_folder_and_filename_match():
     path = build_movie_path(

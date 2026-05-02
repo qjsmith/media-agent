@@ -4,8 +4,8 @@ Run locally only, not in CI.
 
     pytest tests/integration/
 """
-import pytest
-from agent.tools.metadata import search_tmdb, search_episode_by_title
+
+from agent.tools.metadata import search_episode_by_title, search_tmdb
 
 
 def test_search_tmdb_breaking_bad():
