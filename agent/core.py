@@ -1,13 +1,15 @@
-from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 
 from agent.tools.confidence import get_best_match
+from agent.tools.llm import llm_resolve
 from agent.tools.logger import log_decision
+from agent.tools.media_type import detect_media_type
 from agent.tools.metadata import get_episode_details, search_episode_by_title
 from agent.tools.parser import parse_filename
+from agent.tools.plex_refresh import refresh_plex_library
 from agent.tools.renamer import build_movie_path, build_tv_path, rename_file
 from agent.tools.scanner import scan_badly_named
-from config import GROQ_API_KEY, MEDIA_PATH
+from config import GROQ_API_KEY, MEDIA_PATH, PLEX_TOKEN, PLEX_URL
 
 CONFIDENCE_THRESHOLD = 90.0
 DRY_RUN = False
@@ -15,77 +17,6 @@ LLM_CALL_LIMIT = 25
 
 TV_PATH = MEDIA_PATH + "/TV Shows"
 MOVIE_PATH = MEDIA_PATH + "/Movies"
-
-
-def detect_media_type(parsed: dict) -> str:
-    """Guess if file is tv or movie based on parsed info."""
-    if parsed.get("is_movie_special"):
-        return "movie"
-    if parsed["season"] is not None or parsed["episode"] is not None:
-        return "tv"
-
-    full_path = parsed.get("original_path", "").lower()
-    if "/movies/" in full_path:
-        return "movie"
-    if "/tv shows/" in full_path or "/tv/" in full_path:
-        return "tv"
-
-    parent = parsed["context"]["parent_folder"].lower()
-    grandparent = parsed["context"]["grandparent_folder"].lower()
-    if "movie" in parent or "film" in parent:
-        return "movie"
-    if "movie" in grandparent or "film" in grandparent:
-        return "movie"
-    if "tv" in parent or "show" in parent or "series" in parent:
-        return "tv"
-    return "tv"
-
-
-def llm_resolve(parsed: dict, candidates: list, llm) -> dict | None:
-    """Use LLM to resolve ambiguous or uncertain matches."""
-    candidate_text = "\n".join([f"- {c['title']} ({c['year']}) — popularity: {c['popularity']}" for c in candidates])
-
-    context = f"""
-Filename: {parsed["filename"]}
-Parent folder: {parsed["context"]["parent_folder"]}
-Grandparent folder: {parsed["context"]["grandparent_folder"]}
-Extracted title: {parsed["cleaned_title"]}
-Season: {parsed["season"]}
-Episode: {parsed["episode"]}
-Year: {parsed["year"]}
-"""
-
-    prompt = f"""You are helping identify a media file for a Plex server.
-
-Here is what we know about the file:
-{context}
-
-Here are the top TMDB candidates:
-{candidate_text}
-
-Which candidate is the most likely match? Reply with ONLY the title and year 
-in this exact format: TITLE (YEAR)
-If you genuinely cannot determine the match, reply with: UNKNOWN
-"""
-
-    response = llm.invoke(
-        [
-            SystemMessage(content="You are a media identification assistant."),
-            HumanMessage(content=prompt),
-        ]
-    )
-
-    answer = response.content.strip()
-    print(f"  [LLM] {answer}")
-
-    if answer == "UNKNOWN":
-        return None
-
-    for c in candidates:
-        if c["title"].lower() in answer.lower():
-            return c
-
-    return None
 
 
 def build_new_path(match: dict, parsed: dict, media_type: str) -> str | None:
@@ -233,6 +164,9 @@ def run_agent():
     print(f"  Flagged for review: {stats['flagged']}")
     print(f"  Skipped:            {stats['skipped']}")
     print(f"  LLM calls made:     {llm_calls} / {LLM_CALL_LIMIT}")
+
+    if not DRY_RUN:
+        refresh_plex_library(PLEX_URL, PLEX_TOKEN)
 
 
 if __name__ == "__main__":
