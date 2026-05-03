@@ -53,6 +53,7 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
             "score": 0.0,
             "ambiguous": False,
             "unidentifiable": True,
+            "reason": "no_title_parsed",
             "candidates": [],
         }
 
@@ -64,6 +65,7 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
             "score": 0.0,
             "ambiguous": False,
             "unidentifiable": True,
+            "reason": "tmdb_no_candidates",
             "candidates": [],
         }
 
@@ -92,5 +94,6 @@ def get_best_match(parsed: dict, media_type: str = "tv") -> dict:
         "score": best["score"],
         "ambiguous": ambiguous,
         "unidentifiable": False,
+        "reason": None,
         "candidates": [s["candidate"] for s in scored[:3]],
     }

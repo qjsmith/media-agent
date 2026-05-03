@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from agent.tools.confidence import get_best_match, score_match
 
 # ---------------------------------------------------------------------------
@@ -112,3 +114,16 @@ def test_get_best_match_ambiguous_when_scores_close(monkeypatch):
     parsed = make_parsed("The Office", year=None)
     result = get_best_match(parsed, "tv")
     assert result["ambiguous"] is True
+
+
+def test_get_best_match_no_title_reason():
+    parsed = {"cleaned_title": "", "year": None}
+    result = get_best_match(parsed)
+    assert result["reason"] == "no_title_parsed"
+
+
+def test_get_best_match_no_candidates_reason():
+    parsed = {"cleaned_title": "Some Obscure Title", "year": None}
+    with patch("agent.tools.confidence.search_tmdb", return_value=[]):
+        result = get_best_match(parsed)
+    assert result["reason"] == "tmdb_no_candidates"

@@ -77,7 +77,7 @@ def run_agent():
 
         if result["unidentifiable"]:
             print("  Unidentifiable — flagging for review")
-            log_decision(filename, "flagged", "Could not extract title", False)
+            log_decision(filename, "flagged", result["reason"], False)
             stats["flagged"] += 1
             continue
 
